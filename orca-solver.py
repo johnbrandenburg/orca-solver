@@ -60,26 +60,24 @@ def buildBinaryGwas(inputMatrix):
                 row = np.append(row, 1)
                 row = np.append(row, 1)
         binaryMatrix = np.concatenate((binaryMatrix, row))
-    binaryMatrix = np.reshape(binaryMatrix, (len(inputMatrix) * (numCaseIndiv + numControlIndiv), 4))
+    binaryMatrix = np.reshape(binaryMatrix,
+                              (len(inputMatrix) * (numCaseIndiv + numControlIndiv), 4))
 
     G = np.array([])
-
     for indiv in range(numCaseIndiv + numControlIndiv):
-        G = np.concatenate((G, []))
+        gJ = np.array([])
+        step = numCaseIndiv + numControlIndiv
+        end = numRegions * step
+        for region in range(indiv, end, step):
+            gJ = np.append(gJ, binaryMatrix[region])
+        G = np.concatenate((G, gJ))
 
-    print(binaryMatrix)
-
-    print(G)
-
-    for region in range(len(binaryMatrix)):
-        for indiv in range(len(binaryMatrix[region]), 4):
-            G = np.concatenate((G[indiv / 4]))
-
+    G = np.reshape(G, (numCaseIndiv + numControlIndiv, 4 * numRegions))
     return G
 
 def addConstraints(initialLPModel, G, individualVars, desiredPatternSize):
     encodedGwasVars = []
-    s = len(G)
+    s = len(G[0])
     numIndiv = numCaseIndiv + numControlIndiv
 
     for region in range(s):
@@ -95,8 +93,8 @@ def addConstraints(initialLPModel, G, individualVars, desiredPatternSize):
         constraintJ = LinExpr()
         constraintK = LinExpr()
         for region in range(s):
-            constraintJ += G[region][indiv] * encodedGwasVars[region]
-            constraintK += G[region][indiv] * encodedGwasVars[region]
+            constraintJ += G[indiv][region] * encodedGwasVars[region]
+            constraintK += G[indiv][region] * encodedGwasVars[region]
         initialLPModel.addConstr(desiredPatternSize - constraintJ,
                                  GRB.LESS_EQUAL,
                                  s * (1 - individualVars[indiv]))
@@ -106,6 +104,32 @@ def addConstraints(initialLPModel, G, individualVars, desiredPatternSize):
 
     return initialLPModel
 
+def printSolution(lpModel, regionNames):
+    solutionVars = lpModel.getVars()
+    numCaseWithPattern = 0
+    numControlWithPattern = 0
+    markInSolution = []
+
+    for j in range(numCaseIndiv):
+        if solutionVars[j].X == 1:
+            numCaseWithPattern += 1
+    for j in range(numCaseIndiv, numCaseIndiv + numControlIndiv):
+        if solutionVars[j].X == 1:
+            numControlWithPattern += 1
+
+    for i in range(numCaseIndiv + numControlIndiv,
+                   4 * len(regionNames) + numCaseIndiv + numControlIndiv):
+        if solutionVars[i].X == 1:
+            markInSolution.append(1)
+        else:
+            markInSolution.append(0)
+
+    print('case with pattern: ', numCaseWithPattern)
+    print('control with pattern: ', numControlWithPattern)
+
+    for i in range(1, 4 * len(regionNames) - 1):
+        if markInSolution[i] == 1:
+            print(snpNames[math.floor(i / 4)])
 
 
 if __name__ == '__main__':
@@ -120,10 +144,6 @@ if __name__ == '__main__':
     initialLPModel, individualVars = setObjective(initialLPModel)
     binaryGwas = buildBinaryGwas(inputMatrix)
     initialLPModel = addConstraints(initialLPModel, binaryGwas, individualVars, solutionSize)
-    # initialLPModel.optimize()
-    # initialLPModel.write('initial-model.lp')
-
-
-
-
-
+    initialLPModel.optimize()
+    printSolution(initialLPModel, snpNames)
+    initialLPModel.write('initial-model.lp')

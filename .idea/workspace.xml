@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="428063aa-99a2-4297-862a-474b40e409b6" name="Default Changelist" comment="" />
+    <list default="true" id="428063aa-99a2-4297-862a-474b40e409b6" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/inputs/fiftySamp.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/inputs/fivehundredSub.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/inputs/twentyFive.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gurobi.log" beforeDir="false" afterPath="$PROJECT_DIR$/gurobi.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/initial-model.lp" beforeDir="false" afterPath="$PROJECT_DIR$/initial-model.lp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/orca-solver.py" beforeDir="false" afterPath="$PROJECT_DIR$/orca-solver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/small-input.txt" beforeDir="false" afterPath="$PROJECT_DIR$/inputs/small-input.txt" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -23,40 +32,55 @@
         <counts>
           <entry key="log" value="1" />
           <entry key="lp" value="1" />
-          <entry key="py" value="2" />
-          <entry key="txt" value="1" />
+          <entry key="py" value="3" />
+          <entry key="txt" value="2" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
-          <entry key="PLAIN_TEXT" value="3" />
-          <entry key="Python" value="2" />
+          <entry key="PLAIN_TEXT" value="4" />
+          <entry key="Python" value="3" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="py" value="3762" />
+          <entry key="py" value="4866" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="Python" value="3762" />
+          <entry key="Python" value="4866" />
         </counts>
       </usages-collector>
     </session>
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/orca-solver.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="216">
-              <caret line="44" column="43" selection-start-line="44" selection-start-column="43" selection-end-line="44" selection-end-column="43" />
+            <state relative-caret-position="-775">
+              <caret line="91" selection-start-line="91" selection-end-line="91" />
               <folding>
                 <element signature="e#0#22#0" expanded="true" />
-                <marker date="1537731544249" expanded="true" signature="67:610" ph="..." />
-                <marker date="1537731544249" expanded="true" signature="638:643" ph="..." />
+                <marker date="1537753691947" expanded="true" signature="67:610" ph="..." />
+                <marker date="1537753691947" expanded="true" signature="638:643" ph="..." />
+                <marker date="1537753691947" expanded="true" signature="4055:4798" ph="..." />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/inputs/twentyFive.txt">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$USER_HOME$/Library/Caches/PyCharmCE2018.2/python_stubs/-1127977050/builtins.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="405">
+              <caret line="4206" column="8" selection-start-line="4206" selection-start-column="8" selection-end-line="4206" selection-end-column="8" />
             </state>
           </provider>
         </entry>
@@ -64,8 +88,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/initial-model.lp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-556">
-              <caret line="11" column="7" selection-start-line="11" selection-start-column="7" selection-end-line="11" selection-end-column="7" />
+            <state relative-caret-position="2983">
+              <caret line="157" column="7" selection-start-line="157" selection-start-column="7" selection-end-line="157" selection-end-column="7" />
             </state>
           </provider>
         </entry>
@@ -80,18 +104,23 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/small-input.txt">
+        <entry file="file://$PROJECT_DIR$/inputs/small-input.txt">
           <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/gurobi.log">
           <provider selected="true" editor-type-id="LogFileEditorProvider">
-            <state relative-caret-position="-23834" />
+            <state relative-caret-position="219">
+              <caret line="1810" lean-forward="true" selection-start-line="1810" selection-end-line="1810" />
+            </state>
           </provider>
         </entry>
       </file>
     </leaf>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
@@ -106,6 +135,7 @@
     <option name="width" value="1146" />
     <option name="height" value="806" />
   </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
     <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
@@ -121,20 +151,7 @@
             <path>
               <item name="orca-solver" type="b2602c69:ProjectViewProjectNode" />
               <item name="orca-solver" type="462c0819:PsiDirectoryNode" />
-              <item name="venv" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="orca-solver" type="b2602c69:ProjectViewProjectNode" />
-              <item name="orca-solver" type="462c0819:PsiDirectoryNode" />
-              <item name="venv" type="462c0819:PsiDirectoryNode" />
-              <item name="lib" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="orca-solver" type="b2602c69:ProjectViewProjectNode" />
-              <item name="orca-solver" type="462c0819:PsiDirectoryNode" />
-              <item name="venv" type="462c0819:PsiDirectoryNode" />
-              <item name="lib" type="462c0819:PsiDirectoryNode" />
-              <item name="python3.6" type="462c0819:PsiDirectoryNode" />
+              <item name="inputs" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -148,6 +165,7 @@
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/inputs" />
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
@@ -177,7 +195,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1146" height="806" extended-state="0" />
+    <frame x="293" y="23" width="1146" height="806" extended-state="0" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.18488888" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -209,35 +227,48 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/inputs/small-input.txt">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$USER_HOME$/Library/Caches/PyCharmCE2018.2/python_stubs/-1127977050/builtins.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="405">
+          <caret line="4206" column="8" selection-start-line="4206" selection-start-column="8" selection-end-line="4206" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/initial-model.lp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2983">
+          <caret line="157" column="7" selection-start-line="157" selection-start-column="7" selection-end-line="157" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/gurobi.log">
       <provider selected="true" editor-type-id="LogFileEditorProvider">
-        <state relative-caret-position="-23834" />
+        <state relative-caret-position="219">
+          <caret line="1810" lean-forward="true" selection-start-line="1810" selection-end-line="1810" />
+        </state>
       </provider>
       <provider editor-type-id="text-editor">
         <state relative-caret-position="-20067" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/initial-model.lp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-556">
-          <caret line="11" column="7" selection-start-line="11" selection-start-column="7" selection-end-line="11" selection-end-column="7" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/small-input.txt">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/orca-solver.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="216">
-          <caret line="44" column="43" selection-start-line="44" selection-start-column="43" selection-end-line="44" selection-end-column="43" />
+        <state relative-caret-position="-775">
+          <caret line="91" selection-start-line="91" selection-end-line="91" />
           <folding>
             <element signature="e#0#22#0" expanded="true" />
-            <marker date="1537731544249" expanded="true" signature="67:610" ph="..." />
-            <marker date="1537731544249" expanded="true" signature="638:643" ph="..." />
+            <marker date="1537753691947" expanded="true" signature="67:610" ph="..." />
+            <marker date="1537753691947" expanded="true" signature="638:643" ph="..." />
+            <marker date="1537753691947" expanded="true" signature="4055:4798" ph="..." />
           </folding>
         </state>
       </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/inputs/twentyFive.txt">
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
   </component>
 </project>
