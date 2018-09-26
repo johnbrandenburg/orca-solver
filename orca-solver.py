@@ -141,8 +141,8 @@ if __name__ == '__main__':
     initialLPModel = Model("initialLPModel")
 
     snpNames, inputMatrix = readInputFile(inputFileName)
-    initialLPModel, individualVars = setObjective(initialLPModel)
     binaryGwas = buildBinaryGwas(inputMatrix)
+    initialLPModel, individualVars = setObjective(initialLPModel)
     initialLPModel = addConstraints(initialLPModel, binaryGwas, individualVars, solutionSize)
     initialLPModel.optimize()
     printSolution(initialLPModel, snpNames)

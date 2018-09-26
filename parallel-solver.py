@@ -6,29 +6,37 @@ rank = comm.Get_rank()
 
 
 def parentInit():
-    # print(rank)
     bounds = [0, 1]
-    i = 1
-    print(bounds[0], bounds[1])
-    while bounds[0] < bounds[1]:
+    childWorking = {}
+    for i in range(1, size):
+        childWorking[i] = False
 
-        print(i)
-        comm.isend(bounds, dest=i, tag=i % 2)
-        req = comm.irecv(source=MPI.ANY_SOURCE)
-        bounds = req.wait()
-        i += 1
-        if i >= size:
-            i = 1
+    while bounds[0] < bounds[1]:
+        allWorking = True
+        notWorking = 0
+        for j in childWorking:
+            if not childWorking[j]:
+                allWorking = False
+                notWorking = j
+
+        if allWorking:
+            data = comm.recv(source=MPI.ANY_SOURCE)
+            bounds = data['bounds']
+            print(bounds)
+            childWorking[data['rank']] = False
+
+        else:
+            comm.send(bounds, dest=notWorking)
+            childWorking[notWorking] = True
 
 
 def childInit():
-    # print('child', rank)
     while True:
-        data = comm.recv(source=0)
-        print(data)
-        data[0] += .01
-        data[1] -= .01
-        comm.isend(data, dest=0)
+        bounds = comm.recv(source=0)
+        bounds[0] += .01
+        bounds[1] -= .01
+        data = {'rank': rank, 'bounds': bounds}
+        comm.send(data, dest=0)
 
 
 if __name__ == "__main__":
