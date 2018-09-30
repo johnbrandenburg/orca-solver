@@ -1,11 +1,11 @@
 from gurobipy import *
 import numpy as np
 
-def setObjective(model):
+def setObjective(model, numCaseIndiv, numControlIndiv):
     objectiveExpression = LinExpr()
     individualVars = []
     for individual in range(numCaseIndiv + numControlIndiv):
-        individualVars.append(model.addVar(lb=0, ub=1, vtype=GRB.BINARY))
+        individualVars.append(model.addVar(lb=0, ub=1, vtype=GRB.CONTINUOUS))
 
     for var in range(numCaseIndiv):
         objectiveExpression += 1.0 / float(numCaseIndiv) * individualVars[var]
@@ -15,6 +15,7 @@ def setObjective(model):
 
     model.setObjective(objectiveExpression, GRB.MAXIMIZE)
     return model, individualVars
+
 
 def readInputFile(filename):
     import fileinput
@@ -37,7 +38,7 @@ def readInputFile(filename):
     return snpNames, inputMatrix
 
 
-def buildBinaryGwas(inputMatrix):
+def buildBinaryGwas(inputMatrix, numCaseIndiv, numControlIndiv):
     numRegions = len(inputMatrix)
     binaryMatrix = np.array([])
     for region in range(numRegions):
@@ -75,13 +76,52 @@ def buildBinaryGwas(inputMatrix):
     G = np.reshape(G, (numCaseIndiv + numControlIndiv, 4 * numRegions))
     return G
 
-def addConstraints(initialLPModel, G, individualVars, desiredPatternSize):
+
+def addIPConstraints(model, iVars, mVars):
+    for i in range(len(iVars)):
+        iVars[i].setAttr('vtype', GRB.BINARY)
+    for i in range(len(mVars)):
+        mVars[i].setAttr('vtype', GRB.BINARY)
+
+    return model
+
+
+def addMIPConstraints(model, iVars, constraints):
+    j = 0
+    print('constraints', constraints)
+    latestCut = constraints.pop()['mark']
+    for i in range(len(iVars)):
+        if i == latestCut[j]:
+            iVars[i].setAttr('lb', 1)
+            if j < len(latestCut) - 1:
+                j += 1
+        else:
+            iVars[i].setAttr('ub', 0)
+    return model
+
+
+def addLPConstraints(model, mVars, constraints, solutionSize):
+    print(constraints)
+    for i in range(len(constraints)):
+        j = 0
+        currentConstraint = LinExpr()
+        for k in range(len(mVars)):
+            if k == constraints[i]['mark'][j]:
+                currentConstraint += mVars[k]
+                if j < len(constraints[i]['mark']):
+                    j += 1
+        model.addConstr(currentConstraint, GRB.LESS_EQUAL, solutionSize)
+    return model
+
+
+def addInitialConstraints(initialLPModel, G, individualVars, desiredPatternSize,
+                          numCaseIndiv, numControlIndiv):
     encodedGwasVars = []
     s = len(G[0])
     numIndiv = numCaseIndiv + numControlIndiv
 
     for region in range(s):
-        encodedGwasVars.append(initialLPModel.addVar(lb=0, ub=1, vtype=GRB.BINARY))
+        encodedGwasVars.append(initialLPModel.addVar(lb=0, ub=1, vtype=GRB.CONTINUOUS))
 
     constraintL = LinExpr()
     for region in range(s):
@@ -102,7 +142,7 @@ def addConstraints(initialLPModel, G, individualVars, desiredPatternSize):
                                  GRB.LESS_EQUAL,
                                  s * individualVars[indiv])
 
-    return initialLPModel
+    return initialLPModel, encodedGwasVars
 
 def printSolution(lpModel, regionNames):
     solutionVars = lpModel.getVars()
@@ -143,7 +183,7 @@ if __name__ == '__main__':
     snpNames, inputMatrix = readInputFile(inputFileName)
     binaryGwas = buildBinaryGwas(inputMatrix)
     initialLPModel, individualVars = setObjective(initialLPModel)
-    initialLPModel = addConstraints(initialLPModel, binaryGwas, individualVars, solutionSize)
+    initialLPModel, markVars = addRelaxedConstraints(initialLPModel, binaryGwas, individualVars, solutionSize)
     initialLPModel.optimize()
     printSolution(initialLPModel, snpNames)
     initialLPModel.write('initial-model.lp')
