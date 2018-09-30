@@ -88,7 +88,6 @@ def addIPConstraints(model, iVars, mVars):
 
 def addMIPConstraints(model, iVars, constraints):
     j = 0
-    print('constraints', constraints)
     latestCut = constraints.pop()['mark']
     for i in range(len(iVars)):
         if i == latestCut[j]:
@@ -101,7 +100,6 @@ def addMIPConstraints(model, iVars, constraints):
 
 
 def addLPConstraints(model, mVars, constraints, solutionSize):
-    print(constraints)
     for i in range(len(constraints)):
         j = 0
         currentConstraint = LinExpr()
