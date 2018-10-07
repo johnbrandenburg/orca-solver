@@ -91,11 +91,9 @@ def addMIPConstraints(model, iVars, constraints):
     latestCut = constraints.pop()['mark']
     for i in range(len(iVars)):
         if i == latestCut[j]:
-            iVars[i].setAttr('lb', 1)
+            iVars[i].setAttr('vtype', GRB.BINARY)
             if j < len(latestCut) - 1:
                 j += 1
-        else:
-            iVars[i].setAttr('ub', 0)
     return model
 
 
@@ -106,7 +104,7 @@ def addLPConstraints(model, mVars, constraints, solutionSize):
         for k in range(len(mVars)):
             if k == constraints[i]['mark'][j]:
                 currentConstraint += mVars[k]
-                if j < len(constraints[i]['mark']):
+                if j < len(constraints[i]['mark']) - 1:
                     j += 1
         model.addConstr(currentConstraint, GRB.LESS_EQUAL, solutionSize)
     return model

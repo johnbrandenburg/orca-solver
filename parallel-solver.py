@@ -23,6 +23,7 @@ def parentInit():
                                                data['addedConstraints'])
     i = 0
     while counters['bounds'][0] < counters['bounds'][1]:
+        print(counters)
         i += 1
         if data['addedConstraints'][-1]['obj'] < counters['bounds'][1]:
             counters['bounds'][1] = data['addedConstraints'][-1]['obj']
@@ -110,6 +111,12 @@ def childInit():
             ipModel = buildIPMIPModel(data)
             ipModel.write('models/integral-model.lp')
             ipModel.optimize()
+            if ipModel.status == GRB.Status.INFEASIBLE:
+                print('infeasible MIP', ipModel.status)
+                mesg['infeasible'] = True
+                mesg['rank'] = rank
+                comm.send(mesg, dest=0)
+                break
             mesg['lower'] = ipModel.objVal
             mesg['snps'] = []
             for i in range(numCaseIndiv + numControlIndiv, len(ipModel.getVars())):
