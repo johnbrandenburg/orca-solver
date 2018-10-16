@@ -1,5 +1,9 @@
 from mpi4py import MPI
 from model import *
+import random
+import time
+
+FINISHING_THRES = 1
 
 comm = MPI.COMM_WORLD
 size = comm.Get_size()
@@ -17,12 +21,22 @@ def parentInit():
     data = {
         'initialConstraints': binaryGwas,
         'addedConstraints': [],
+        'finish': False
     }
 
-    data['addedConstraints'], counters['infeasible'] = genPiercingCuts(currentModel,
-                                               data['addedConstraints'])
+    data['addedConstraints'], counters['infeasible'],\
+    counters['intLP'] = genPiercingCuts(currentModel, data['addedConstraints'], False)
+
     i = 0
     while counters['bounds'][0] < counters['bounds'][1]:
+        if counters['bounds'][0] != 0:
+            if (counters['bounds'][1] - counters['bounds'][0]) / \
+                    counters['bounds'][0] < FINISHING_THRES:
+                data['finish'] = True
+                counters['finish'] = True
+        if counters['intLP']:
+            break
+        print(counters)
         i += 1
         if data['addedConstraints'][-1]['obj'] < counters['bounds'][1]:
             counters['bounds'][1] = data['addedConstraints'][-1]['obj']
@@ -37,7 +51,10 @@ def parentInit():
         if counters['allWorking']:
             mesg = comm.recv(source=MPI.ANY_SOURCE)
             counters['childWorking'][mesg['rank']] = False
-            if mesg['infeasible'] or counters['infeasible']:
+
+            if 'infeasibleIP' in mesg:
+                continue
+            elif mesg['infeasible'] or counters['infeasible']:
                 counters['infeasible'] = True
                 counters['childWorking'][mesg['rank']] = False
                 break
@@ -62,13 +79,10 @@ def parentInit():
 
         if counters['cycles'] <= 0:
             counters['cycles'] = 2
-            data['addedConstraints'], counters['infeasible'] = \
-                genPiercingCuts(currentModel, data['addedConstraints'])
-            currentModel = addLPConstraints(currentModel, mVars,
-                                            data['addedConstraints'],
-                                            solutionSize)
+            data['addedConstraints'], counters['infeasible'], \
+                counters['intLP'] = genPiercingCuts(currentModel, data['addedConstraints'], data['finish'])
+            currentModel = addLPConstraints(currentModel, mVars, data['addedConstraints'])
             currentModel.write('models/lp-model.lp')
-
 
     if counters['infeasible']:
         j = 0
@@ -110,6 +124,12 @@ def childInit():
             ipModel = buildIPMIPModel(data)
             ipModel.write('models/integral-model.lp')
             ipModel.optimize()
+            if ipModel.status == GRB.Status.INFEASIBLE:
+                print('infeasible IP', ipModel.status)
+                mesg['infeasibleIP'] = True
+                mesg['rank'] = rank
+                comm.send(mesg, dest=0)
+                continue
             mesg['lower'] = ipModel.objVal
             mesg['snps'] = []
             for i in range(numCaseIndiv + numControlIndiv, len(ipModel.getVars())):
@@ -131,7 +151,8 @@ def processMesg(mesg, bounds):
     return bounds
 
 
-def genPiercingCuts(model, cuts):
+def genPiercingCuts(model, cuts, finish):
+    model.write('models/initial-model.lp')
     model.optimize()
     if model.status == GRB.Status.INFEASIBLE:
         print('infeasible LP', model.status)
@@ -139,9 +160,12 @@ def genPiercingCuts(model, cuts):
     vars = model.getVars()
     toForceInt = []
 
+    integerSolution = True
+
     for j in range(numCaseIndiv + numControlIndiv):
         if vars[j].X != 1 and vars[j].X != 0:
             toForceInt.append(1)
+            integerSolution = False
         else:
             toForceInt.append(0)
 
@@ -149,9 +173,41 @@ def genPiercingCuts(model, cuts):
 
     for i in range(numCaseIndiv + numControlIndiv, len(vars)):
         markVals.append({i - (numCaseIndiv + numControlIndiv): vars[i].X})
+        if vars[i].X != 0 and vars[i].X != 1:
+            integerSolution = False
 
     markVals.sort(key=takeSecond)
 
+    if finish:
+        includedInSparseCut = []
+        choices = np.arange(0, len(markVals))
+        for i in range(solutionSize * 2):
+            choice = random.randint(0, len(choices) - 1)
+            includedInSparseCut.append(choices[choice])
+            choices = np.delete(choices, choice, 0)
+    else:
+        currentCut = genNaiveCut(markVals)
+
+        includedInSparseCut = checkIfCutIsDuplicate(currentCut, cuts, markVals)
+
+    currentCut = {'indiv': toForceInt,
+                  'mark': includedInSparseCut,
+                  'obj': model.getObjective().getValue()}
+
+    if isinstance(currentCut['mark'], list):
+        currentCut['mark'].sort()
+    else:
+        keys = list(currentCut['mark'].keys())
+        currentCut = []
+        for i in currentCut:
+            currentCut[i] = int(keys[i])
+        currentCut.sort()
+
+    cuts.append(currentCut)
+
+    return cuts, False, integerSolution
+
+def genNaiveCut(markVals):
     quantityTaken = percent / 100.0 * len(markVals) + solutionSize
 
     includedInSparseCut = []
@@ -159,13 +215,29 @@ def genPiercingCuts(model, cuts):
         if i > len(markVals) - quantityTaken:
             includedInSparseCut.append(list(markVals[i].keys()).pop())
 
-    currentCut = {'indiv': toForceInt,
-                  'mark': includedInSparseCut,
-                  'obj': model.getObjective().getValue()}
-    currentCut['mark'].sort()
-    cuts.append(currentCut)
+    return includedInSparseCut
 
-    return cuts, False
+def checkIfCutIsDuplicate(currentCut, cuts, currentMark):
+    while True:
+        if len(cuts) == 0:
+            break
+        uniqCut = True
+        for i in range(len(cuts)):
+            if set(currentCut) == set(cuts[i]['mark']):
+                if len(currentCut) > math.floor(size / 2):
+                    randArray = np.random.permutation(currentMark)
+                    for i in range(solutionSize):
+                        currentCut.append(list(randArray[i].keys()).pop())
+                    break
+                uniqCut = False
+                currentCut.append(list(currentMark[0].keys()).pop())
+                currentMark.pop(0)
+                break
+        if uniqCut:
+            break
+        if len(currentMark) < 1:
+            break
+    return currentCut
 
 def takeSecond(elem):
     return list(elem.values()).pop()
@@ -173,11 +245,11 @@ def takeSecond(elem):
 
 def buildIPMIPModel(data):
     model, binaryGwas, iVars, mVars, snpNames = buildInitialModel()
-    model = addLPConstraints(model, mVars, data['addedConstraints'], solutionSize)
     if data['doMIP']:
+        model = addLPConstraints(model, mVars, data['addedConstraints'][:-1])
         model = addMIPConstraints(model, iVars, data['addedConstraints'])
     else:
-        model = addIPConstraints(model, iVars, mVars)
+        model = addIPConstraints(model, iVars, mVars, data['addedConstraints'])
 
     return model
 

@@ -77,38 +77,39 @@ def buildBinaryGwas(inputMatrix, numCaseIndiv, numControlIndiv):
     return G
 
 
-def addIPConstraints(model, iVars, mVars):
+def addIPConstraints(model, iVars, mVars, constraints):
     for i in range(len(iVars)):
         iVars[i].setAttr('vtype', GRB.BINARY)
+    j = 0
     for i in range(len(mVars)):
         mVars[i].setAttr('vtype', GRB.BINARY)
+        if i == constraints[-1]['mark'][j]:
+            if j < len(constraints[-1]['mark']) - 1:
+                j += 1
+        else:
+            mVars[i].setAttr('ub', 0)
 
     return model
 
 
 def addMIPConstraints(model, iVars, constraints):
-    j = 0
-    latestCut = constraints.pop()['mark']
+    fixedIndivs = constraints.pop()['indiv']
     for i in range(len(iVars)):
-        if i == latestCut[j]:
-            iVars[i].setAttr('lb', 1)
-            if j < len(latestCut) - 1:
-                j += 1
-        else:
-            iVars[i].setAttr('ub', 0)
+        if fixedIndivs[i] == 1:
+            iVars[i].setAttr('vtype', GRB.BINARY)
     return model
 
 
-def addLPConstraints(model, mVars, constraints, solutionSize):
+def addLPConstraints(model, mVars, constraints):
     for i in range(len(constraints)):
         j = 0
         currentConstraint = LinExpr()
         for k in range(len(mVars)):
             if k == constraints[i]['mark'][j]:
                 currentConstraint += mVars[k]
-                if j < len(constraints[i]['mark']):
+                if j < len(constraints[i]['mark']) - 1:
                     j += 1
-        model.addConstr(currentConstraint, GRB.LESS_EQUAL, solutionSize)
+        model.addConstr(currentConstraint, GRB.LESS_EQUAL, 1)
     return model
 
 
