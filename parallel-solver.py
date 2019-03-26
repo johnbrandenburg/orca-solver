@@ -1,7 +1,6 @@
 from mpi4py import MPI
 from model import *
 import random
-import time
 
 FINISHING_THRES = 1
 
@@ -18,11 +17,11 @@ def parentInit():
     for i in range(1, size):
         counters['childWorking'][i] = False
 
-    data = {
+    data = dict({
         'initialConstraints': binaryGwas,
         'addedConstraints': [],
         'finish': False
-    }
+    })
 
     data['addedConstraints'], counters['infeasible'],\
     counters['intLP'] = genPiercingCuts(currentModel, data['addedConstraints'], False)
@@ -81,7 +80,7 @@ def parentInit():
             counters['cycles'] = 2
             data['addedConstraints'], counters['infeasible'], \
                 counters['intLP'] = genPiercingCuts(currentModel, data['addedConstraints'], data['finish'])
-            currentModel = addLPConstraints(currentModel, mVars, data['addedConstraints'])
+            currentModel = addLPConstraints(currentModel, mVars, data['addedConstraints'], solutionSize)
             currentModel.write('models/lp-model.lp')
 
     if counters['infeasible']:
@@ -103,7 +102,6 @@ def parentInit():
         print(snpNames[i])
 
     exit(0)
-
 
 def childInit():
     while True:
@@ -140,7 +138,6 @@ def childInit():
         mesg['infeasible'] = False
         comm.send(mesg, dest=0)
 
-
 def processMesg(mesg, bounds):
     if 'upper' in mesg:
         if mesg['upper'] < bounds[1]:
@@ -149,7 +146,6 @@ def processMesg(mesg, bounds):
         if mesg['lower'] > bounds[0]:
             bounds[0] = mesg['lower']
     return bounds
-
 
 def genPiercingCuts(model, cuts, finish):
     model.write('models/initial-model.lp')
@@ -224,14 +220,14 @@ def checkIfCutIsDuplicate(currentCut, cuts, currentMark):
         uniqCut = True
         for i in range(len(cuts)):
             if set(currentCut) == set(cuts[i]['mark']):
-                if len(currentCut) > math.floor(size / 2):
+                if len(currentCut) > math.floor(size / 4):
                     randArray = np.random.permutation(currentMark)
                     for i in range(solutionSize):
                         currentCut.append(list(randArray[i].keys()).pop())
                     break
                 uniqCut = False
-                currentCut.append(list(currentMark[0].keys()).pop())
-                currentMark.pop(0)
+                currentCut.append(list(currentMark[-1].keys()).pop())
+                currentMark.pop(-1)
                 break
         if uniqCut:
             break
@@ -242,11 +238,10 @@ def checkIfCutIsDuplicate(currentCut, cuts, currentMark):
 def takeSecond(elem):
     return list(elem.values()).pop()
 
-
 def buildIPMIPModel(data):
     model, binaryGwas, iVars, mVars, snpNames = buildInitialModel()
     if data['doMIP']:
-        model = addLPConstraints(model, mVars, data['addedConstraints'][:-1])
+        model = addLPConstraints(model, mVars, data['addedConstraints'], solutionSize)
         model = addMIPConstraints(model, iVars, data['addedConstraints'])
     else:
         model = addIPConstraints(model, iVars, mVars, data['addedConstraints'])
@@ -272,8 +267,6 @@ def buildInitialModel():
                                                      numControlIndiv)
 
     return initialLPModel, binaryGwas, individualVars, markVars, snpNames
-
-
 
 if __name__ == "__main__":
     inputFileName   = sys.argv[1]
