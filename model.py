@@ -131,7 +131,8 @@ def addInitialConstraints(initialLPModel, G, individualVars, desiredPatternSize,
     for region in range(s):
         constraintL += encodedGwasVars[region]
 
-    initialLPModel.addConstr(constraintL, GRB.EQUAL, desiredPatternSize)
+    initialLPModel.addConstr(constraintL, GRB.LESS_EQUAL, math.floor(desiredPatternSize * 1.5))
+    initialLPModel.addConstr(constraintL, GRB.GREATER_EQUAL, math.ceil(desiredPatternSize * .5))
 
     for indiv in range(numIndiv):
         constraintJ = LinExpr()
