@@ -3,6 +3,7 @@ from model import *
 import random
 
 FINISHING_THRES = 1
+MODEL_DIR = '/home/jcb7d7/data/orca-solver/'
 
 comm = MPI.COMM_WORLD
 size = comm.Get_size()
@@ -81,7 +82,7 @@ def parentInit():
             data['addedConstraints'], counters['infeasible'], \
                 counters['intLP'] = genPiercingCuts(currentModel, data['addedConstraints'], data['finish'])
             currentModel = addLPConstraints(currentModel, mVars, data['addedConstraints'], solutionSize)
-            currentModel.write('models/lp-model.lp')
+            currentModel.write(MODEL_DIR + 'models/lp-model.lp')
 
     if counters['infeasible']:
         j = 0
@@ -109,7 +110,7 @@ def childInit():
         data = comm.recv(source=0)
         if data['doMIP']:
             mipModel = buildIPMIPModel(data)
-            mipModel.write('models/mip-model.lp')
+            mipModel.write(MODEL_DIR + 'models/mip-model.lp')
             mipModel.optimize()
             if mipModel.status == GRB.Status.INFEASIBLE:
                 print('infeasible MIP', mipModel.status)
@@ -120,7 +121,7 @@ def childInit():
             mesg['upper'] = mipModel.objVal
         else:
             ipModel = buildIPMIPModel(data)
-            ipModel.write('models/integral-model.lp')
+            ipModel.write(MODEL_DIR + 'models/integral-model.lp')
             ipModel.optimize()
             if ipModel.status == GRB.Status.INFEASIBLE:
                 print('infeasible IP', ipModel.status)
@@ -148,7 +149,7 @@ def processMesg(mesg, bounds):
     return bounds
 
 def genPiercingCuts(model, cuts, finish):
-    model.write('models/initial-model.lp')
+    model.write(MODEL_DIR + 'models/initial-model.lp')
     model.optimize()
     if model.status == GRB.Status.INFEASIBLE:
         print('infeasible LP', model.status)
