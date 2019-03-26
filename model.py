@@ -100,16 +100,21 @@ def addMIPConstraints(model, iVars, constraints):
     return model
 
 
-def addLPConstraints(model, mVars, constraints):
+def addLPConstraints(model, mVars, constraints, solutionSize):
     for i in range(len(constraints)):
         j = 0
         currentConstraint = LinExpr()
+        mirroredCurrentConstraint = LinExpr()
         for k in range(len(mVars)):
             if k == constraints[i]['mark'][j]:
                 currentConstraint += mVars[k]
                 if j < len(constraints[i]['mark']) - 1:
                     j += 1
-        model.addConstr(currentConstraint, GRB.LESS_EQUAL, 1)
+            else:
+                mirroredCurrentConstraint += mVars[k]
+
+        model.addConstr(currentConstraint, GRB.LESS_EQUAL, solutionSize - 1)
+        model.addConstr(mirroredCurrentConstraint, GRB.GREATER_EQUAL, 1)
     return model
 
 
